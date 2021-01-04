@@ -1,14 +1,17 @@
 {
     "management": {
         "ssh": {
+            "typeId" : "ssh",
             "enabled": true,
             "serverPort": 22,
             "fips": false
         },
         "telnet": {
+            "typeId" : "telnet",
             "enabled": true
         },
-        "api": {
+        "httpapi": {
+            "typeId" : "httpapi",
             "http-commands": {
                 "protocols": [
                     "https",

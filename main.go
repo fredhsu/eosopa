@@ -2,11 +2,17 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strings"
 )
+
+// Management is an umbrella type for json encoding
+type Management struct {
+	Management map[string]interface{} `json:"management"`
+}
 
 // ManagementIntf gives common management functions
 type ManagementIntf interface {
@@ -16,7 +22,7 @@ type ManagementIntf interface {
 
 // ManagementAPIHTTP stores data about eAPI config
 type ManagementAPIHTTP struct {
-	typeID    string
+	TypeID    string
 	protocols []string
 	Shutdown  bool
 }
@@ -28,18 +34,23 @@ func (m ManagementAPIHTTP) Enabled() bool {
 
 // Type gives a string value of the management type
 func (m ManagementAPIHTTP) Type() string {
-	return m.typeID
+	return m.TypeID
 }
 
 // ManagementTelnet stores telnet settings
 type ManagementTelnet struct {
-	typeID   string
-	Shutdown bool
+	IdleTimeout  int    `json:"idleTimeout"`
+	IP           string `json:"ip"`   //TODO: create struct
+	IPv6         string `json:"ipv6"` //TODO: create struct
+	SessionLimit int    `json:"sessionLimit"`
+	VRF          string `json:"vrf"` //TODO: create struct
+	TypeID       string `json:"typeId"`
+	Shutdown     bool   `json:"shutdown"`
 }
 
 // Type gives a string value of the management type
 func (m ManagementTelnet) Type() string {
-	return m.typeID
+	return m.TypeID
 }
 
 // Enabled indicates if the feature is enabled
@@ -49,7 +60,7 @@ func (m ManagementTelnet) Enabled() bool {
 
 // ManagementSSH stores ssh settings
 type ManagementSSH struct {
-	typeID     string
+	TypeID     string
 	Shutdown   bool
 	ServerPort int
 }
@@ -61,26 +72,25 @@ func (m ManagementSSH) Enabled() bool {
 
 // Type gives a string value of the management type
 func (m ManagementSSH) Type() string {
-	return m.typeID
+	return m.TypeID
 }
 
 func parseManagement(scanner *bufio.Scanner, line []string) ManagementIntf {
 	switch mgmt := line[1]; mgmt {
 	case "api":
-		fmt.Println("api")
-		return ManagementAPIHTTP{}
+		return ManagementAPIHTTP{TypeID: "api"}
 	case "telnet":
 		return parseTelnet(scanner)
 	case "ssh":
 		return parseSSH(scanner)
 	default:
-		fmt.Println("Not a recognized management type")
+		log.Println("Not a recognized management type")
 		return nil
 	}
 }
 
 func parseSSH(scanner *bufio.Scanner) ManagementSSH {
-	m := ManagementSSH{typeID: "ssh", Shutdown: false}
+	m := ManagementSSH{TypeID: "ssh", Shutdown: false}
 	line := strings.Fields(scanner.Text())
 	if contains(line, "shutdown") {
 		m.Shutdown = parseShutdown(line)
@@ -89,10 +99,21 @@ func parseSSH(scanner *bufio.Scanner) ManagementSSH {
 }
 
 func parseTelnet(scanner *bufio.Scanner) ManagementTelnet {
-	m := ManagementTelnet{typeID: "telnet"}
-	line := strings.Fields(scanner.Text())
-	if contains(line, "shutdown") {
-		m.Shutdown = parseShutdown(line)
+	m := ManagementTelnet{TypeID: "telnet"}
+	for scanner.Scan() {
+		// for line := strings.Fields(scanner.Text()); line[0] != "!"; line = strings.Fields(scanner.Text()) {
+		line := strings.Fields(scanner.Text())
+		if line[0] == "!" {
+			break
+		}
+		if contains(line, "shutdown") {
+			m.Shutdown = parseShutdown(line)
+		}
+		// idle-timeout
+		// ip access-group
+		// ipv6 access-group
+		// session-limit
+		// vrf
 	}
 	return m
 }
@@ -119,17 +140,26 @@ func main() {
 	}
 	defer file.Close()
 
+	v := make(map[string]interface{})
+	// SSH is enabled by default
+	v["ssh"] = ManagementSSH{TypeID: "ssh", Shutdown: false}
+
+	m := Management{Management: v}
 	scanner := bufio.NewScanner(file)
-	i := 0
 	for scanner.Scan() {
 		line := strings.Fields(scanner.Text())
 		if line[0] == "management" {
 			mgmt := parseManagement(scanner, line)
-			fmt.Printf("got a %+v\n", mgmt)
+			if mgmt != nil {
+				m.Management[mgmt.Type()] = mgmt
+			}
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
-		i++
 	}
-
+	b, err := json.Marshal(m)
+	fmt.Printf("%s\n", b)
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
