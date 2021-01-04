@@ -14,6 +14,8 @@ config files
 Example runs:
 
 ```
+$ go run main.go 1> test.json
+
 # What is the output of the SSH policy run against the input
 $ opa eval -i input-example.json -d policy.rego "data.policy.ssh"
 

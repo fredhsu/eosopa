@@ -23,11 +23,11 @@ default ssh = true
 
 ssh = true {
 	m := input.management
-    m.ssh.enabled;
+    m.ssh.shutdown;
     m.ssh.serverPort == 22
 }
 
 telnet {
 	m := input.management
-    m.telnet.enabled
+    m.telnet.shutdown
 }

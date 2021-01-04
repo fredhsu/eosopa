@@ -24,7 +24,7 @@ type ManagementIntf interface {
 type ManagementAPIHTTP struct {
 	TypeID    string
 	protocols []string
-	Shutdown  bool
+	Shutdown  bool `json:"shutdown"`
 }
 
 // Enabled indicates if the feature is enabled
@@ -61,7 +61,7 @@ func (m ManagementTelnet) Enabled() bool {
 // ManagementSSH stores ssh settings
 type ManagementSSH struct {
 	TypeID     string
-	Shutdown   bool
+	Shutdown   bool `json:"shutdown"`
 	ServerPort int
 }
 
@@ -84,7 +84,7 @@ func parseManagement(scanner *bufio.Scanner, line []string) ManagementIntf {
 	case "ssh":
 		return parseSSH(scanner)
 	default:
-		log.Println("Not a recognized management type")
+		log.Printf("%s is not a recognized management type", mgmt)
 		return nil
 	}
 }
@@ -158,7 +158,7 @@ func main() {
 			}
 		}
 	}
-	b, err := json.Marshal(m)
+	b, err := json.MarshalIndent(m, " ", "  ")
 	fmt.Printf("%s\n", b)
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)

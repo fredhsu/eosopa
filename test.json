@@ -1,0 +1,22 @@
+{
+   "management": {
+     "api": {
+       "TypeID": "api",
+       "Shutdown": false
+     },
+     "ssh": {
+       "TypeID": "ssh",
+       "Shutdown": false,
+       "ServerPort": 0
+     },
+     "telnet": {
+       "idleTimeout": 0,
+       "ip": "",
+       "ipv6": "",
+       "sessionLimit": 0,
+       "vrf": "",
+       "typeId": "telnet",
+       "shutdown": false
+     }
+   }
+ }
