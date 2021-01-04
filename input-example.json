@@ -1,0 +1,21 @@
+{
+    "management": {
+        "ssh": {
+            "enabled": true,
+            "serverPort": 22,
+            "fips": false
+        },
+        "telnet": {
+            "enabled": true
+        },
+        "api": {
+            "http-commands": {
+                "protocols": [
+                    "https",
+                    "http",
+                    "unix-socket"
+                ]
+            }
+        }
+    }
+}
