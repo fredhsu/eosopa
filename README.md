@@ -1,6 +1,6 @@
 # EOS to OPA
 
-This tool will convert an EOS config to a input.json file. You can then run OPA against that file with a policy to query if policies are being met. For example, if you have a config that has enabled telnet. Create a rego file that will evaluate the telnet field of the input files, and can then be queried to see if telnet has been enabled. This becomes more powerful when you have multiple devices input and can run a single query against an array of configs.
+This tool will convert an Arista EOS config to a JSON file for use with [Open Policy Agent](https://www.openpolicyagent.org/docs/latest/). You can then run OPA against that file with a policy to query if policies are being met. For example, if you have a config that has enabled telnet. Create a rego file that will evaluate the telnet field of the input files, and can then be queried to see if telnet has been enabled. This becomes more powerful when you have multiple devices input and can run a single query against an array of configs.
 
 **Currently working on parsing the management section of the configuration**
 
@@ -10,8 +10,7 @@ policy.rego - example rego file for policy
 output.json - example output from running opa on input and policy
 config files
 
-
-Example runs:
+## Example runs:
 
 ```
 $ go run main.go 1> test.json
@@ -105,8 +104,10 @@ Run 'help' to see a list of commands and check for updates.
 ```
 
 ## TODO
-- [ ] Export to proper JSON format
+- [x] Export to proper JSON format
 - [ ] Add more features to SSH, API, and Telnet
 - [ ] Add security
+- [ ] Expand JSON to have hostname
+- [ ] allow input/output filenames given
 
 
