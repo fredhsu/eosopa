@@ -18,13 +18,13 @@ package policy
 #    (resize) DATA  edit the JSON value your policy sees under the 'data' global variable
 #           OUTPUT  view the result of policy execution
 
-default telnet = false
-default ssh = true
+default allow = false
 
-ssh = true {
+ssh {
 	m := input.management
-    m.ssh.shutdown;
-    m.ssh.serverPort == 22
+    not m.ssh.shutdown
+    # m.ssh.foo
+    # m.ssh.serverPort == 22
 }
 
 telnet {

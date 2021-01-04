@@ -23,13 +23,75 @@ $ opa eval -i input-example.json -d policy.rego "data.policy.ssh"
 $ opa eval --fail-defined -i input-example.json -d policy.rego "data.policy.ssh" | jq '.result[0].expressions[0].value'
 true
 
+# Is telnet enabled?
+opa eval -i test.json -d policy.rego "data.policy.telnet"
+
+
 ```
 
+The policy defined in policy.rego has the following in the ssh section:
+
+```
+ssh {
+	m := input.management
+  not m.ssh.shutdown
+}
+```
+
+This tests if SSH is not shutdown. If it is it will be undefined. Given our input.json file has ssh in a no shutdown state (default) it will return true when we evaluate it:
+
+```
+$ opa eval -i test.json -d policy.rego "data.policy.ssh"
+{
+  "result": [
+    {
+      "expressions": [
+        {
+          "value": true,
+          "text": "data.policy.ssh",
+          "location": {
+            "row": 1,
+            "col": 1
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+In contrast our policy wants to validate that telnet is shutdown (i.e. no telnet) so our policy looks like this:
+
+```
+telnet {
+	m := input.management
+  m.telnet.shutdown
+}
+```
+
+Since this evaluates to `false` the output is undefined:
+
+```
+opa eval -i test.json -d policy.rego "data.policy.telnet"
+{}
+```
+
+We can use the `--fail` to send a non-zero exit code if the policy fails
+
+```
+$ opa eval --fail -i test.json -d policy.rego "data.policy.ssh"
+$ echo $?
+0
+
+$ opa eval --fail -i test.json -d policy.rego "data.policy.telnet"
+$ echo $?
+1
+```
 
 REPL:
 
 ```
-$ eosopa opa run policy.rego repl.input:input-example.json
+$ opa run policy.rego repl.input:input-example.json
 OPA 0.25.2 (commit 4c6e524, built at 2020-12-08T16:56:55Z)
 
 Run 'help' to see a list of commands and check for updates.

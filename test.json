@@ -2,11 +2,11 @@
    "management": {
      "api": {
        "TypeID": "api",
-       "Shutdown": false
+       "shutdown": false
      },
      "ssh": {
        "TypeID": "ssh",
-       "Shutdown": false,
+       "shutdown": false,
        "ServerPort": 0
      },
      "telnet": {
