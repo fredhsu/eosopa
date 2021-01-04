@@ -41,8 +41,8 @@ Run 'help' to see a list of commands and check for updates.
 ```
 
 ## TODO
-[ ] Export to proper JSON format
-[ ] Add more features to SSH, API, and Telnet
-[ ] Add security
+- [ ] Export to proper JSON format
+- [ ] Add more features to SSH, API, and Telnet
+- [ ] Add security
 
 
