@@ -109,5 +109,8 @@ Run 'help' to see a list of commands and check for updates.
 - [ ] Add security
 - [ ] Expand JSON to have hostname
 - [ ] allow input/output filenames given
+- [ ] handle multiple switch configs 
+- [ ] parse hostname
+- [ ] test code
 
 
