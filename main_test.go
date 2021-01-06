@@ -7,6 +7,15 @@ import (
 	"testing"
 )
 
+func TestParseHostname(t *testing.T) {
+	d := EOSDevice{}
+	line := []string{"hostname", "foo"}
+	d = parseHostname(d, line)
+	if d.Hostname != "foo" {
+		t.Fatalf("Expected hostname to be %s, but got %s", line[1], d.Hostname)
+	}
+}
+
 func TestParseTelnet(t *testing.T) {
 	// Test for telnet no shutdown
 	enabledFile, err := os.Open("./telnetenabled.config")

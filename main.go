@@ -21,8 +21,8 @@ type EOSDevices struct {
 
 // EOSDevice is an EOS endpoint
 type EOSDevice struct {
-	Hostname   string
-	Management Management
+	Hostname   string              `json:"hostname"`
+	Management `json:"management"` // TODO: Get rid of redundant management?
 }
 
 // Management is an umbrella type for json encoding
@@ -121,7 +121,6 @@ func parseSSH(scanner *bufio.Scanner) ManagementSSH {
 
 func parseTelnet(scanner *bufio.Scanner) ManagementTelnet {
 	m := ManagementTelnet{TypeID: "telnet", Shutdown: true}
-
 	for scanner.Scan() {
 		// for line := strings.Fields(scanner.Text()); line[0] != "!"; line = strings.Fields(scanner.Text()) {
 		line := strings.Fields(scanner.Text())
@@ -130,7 +129,7 @@ func parseTelnet(scanner *bufio.Scanner) ManagementTelnet {
 		}
 		if contains(line, "shutdown") {
 			m.Shutdown = parseShutdown(line)
-			log.Printf("parsing shutdown line : %s and result is %+v\n", line, m.Shutdown)
+			// log.Printf("parsing shutdown line : %s and result is %+v\n", line, m.Shutdown)
 		}
 		// idle-timeout
 		// ip access-group
@@ -157,11 +156,13 @@ func contains(xs []string, s string) bool {
 	return false
 }
 
-func parseHostname(line []string) {
-
+func parseHostname(d EOSDevice, line []string) EOSDevice {
+	d.Hostname = line[1]
+	return d
 }
+
 func main() {
-	file, err := os.Open("./telnetenabled.config")
+	file, err := os.Open("./dmz-lf18.config")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -171,22 +172,33 @@ func main() {
 	// SSH is enabled by default
 	v["ssh"] = ManagementSSH{TypeID: "ssh", Shutdown: false}
 
+	device := EOSDevice{}
 	m := Management{Management: v}
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.Fields(scanner.Text())
-		if line[0] == "management" {
-			mgmt := parseManagement(scanner, line)
-			if mgmt != nil {
-				m.Management[mgmt.Type()] = mgmt
+		switch line[0] {
+		case "management":
+			{
+				mgmt := parseManagement(scanner, line)
+				if mgmt != nil {
+					m.Management[mgmt.Type()] = mgmt
+				}
+				if err != nil {
+					log.Fatal(err)
+				}
 			}
-			if err != nil {
-				log.Fatal(err)
+		case "hostname":
+			{
+				device = parseHostname(device, line)
 			}
 		}
 	}
+	device.Management = m
 	b, err := json.MarshalIndent(m, " ", "  ")
+	d, err := json.MarshalIndent(device, " ", "  ")
 	fmt.Printf("%s\n", b)
+	fmt.Printf("%s\n", d)
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}

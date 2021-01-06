@@ -110,7 +110,14 @@ Run 'help' to see a list of commands and check for updates.
 - [ ] Expand JSON to have hostname
 - [ ] allow input/output filenames given
 - [ ] handle multiple switch configs 
-- [ ] parse hostname
+- [x] parse hostname
 - [ ] test code
-
+- [ ] reorg file structure
+- [ ] add snmp community parsing for checking community strings
+- [ ] static user accounts vs radius
+- [ ] inbound filter for management access
+- [ ] logging turned on and correct
+- [ ] dns configured correctly
+- [ ] test passwords against common hashes
+- [ ] config validation as a service
 
