@@ -9,6 +9,12 @@ import (
 	"strings"
 )
 
+// NameServers is an ip name-server
+type NameServers struct {
+	Vrf       string
+	Addresses []string
+}
+
 // Hostname is used to hold the hostname for JSON serialization
 type Hostname struct {
 	Hostname string
@@ -21,8 +27,9 @@ type EOSDevices struct {
 
 // EOSDevice is an EOS endpoint
 type EOSDevice struct {
-	Hostname   string              `json:"hostname"`
-	Management `json:"management"` // TODO: Get rid of redundant management?
+	Hostname      string              `json:"hostname"`
+	Management    `json:"management"` // TODO: Get rid of redundant management?
+	IPNameServers NameServers         `json:"ipNameServers"`
 }
 
 // Management is an umbrella type for json encoding
@@ -158,6 +165,45 @@ func contains(xs []string, s string) bool {
 
 func parseHostname(d EOSDevice, line []string) EOSDevice {
 	d.Hostname = line[1]
+	return d
+}
+
+/*
+ip name-server vrf default 172.22.22.40
+dns domain sjc.aristanetworks.com
+!
+ntp server 172.22.22.50
+ntp server 198.55.111.50
+ntp server 216.229.0.17
+*/
+
+// parses ip name-server command (max: 3)
+// ex: ip name-server vrf default 172.22.22.40
+func parseNameServers(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
+	ns := NameServers{}
+	line := strings.Fields(scanner.Text())
+	addrs := []string{}
+	ns.Vrf = line[3]
+	for _, addr := range line[4:] {
+		addrs = append(addrs, addr)
+	}
+	ns.Addresses = addrs
+	d.IPNameServers = ns
+	return d
+}
+
+// parses dns domain command
+// ex: dns domain sjc.aristanetworks.com
+func parseDNSDomain(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
+	return d
+}
+
+// parses ntp server command
+// ex.
+// ntp server 172.22.22.50
+// ntp server 198.55.111.50
+// ntp server 216.229.0.17
+func parseNTPServer(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
 	return d
 }
 

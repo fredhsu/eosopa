@@ -118,6 +118,7 @@ Run 'help' to see a list of commands and check for updates.
 - [ ] inbound filter for management access
 - [ ] logging turned on and correct
 - [ ] dns configured correctly
+- [ ] ntp configured correctly
 - [ ] test passwords against common hashes
 - [ ] config validation as a service
 
