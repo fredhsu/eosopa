@@ -16,6 +16,40 @@ type NameServers struct {
 	Addresses []string
 }
 
+// LoggingHost is a syslog server
+type LoggingHost struct {
+	Hostname string `json:"hostname"`
+}
+
+// Logging configuratoin
+type Logging struct {
+	Host            LoggingHost
+	On              bool
+	Level           string
+	SourceInterface string
+	Vrf             string // TODO need additional fields for host and source interface
+
+	/*
+			  buffered            Logging buffer configuration
+		  console             Set console logging parameters
+		  event               Configure logging events
+		  facility            Set logging facility
+		  format              Set logging format parameters
+		  host                Set syslog server IP address and parameters
+		  level               Configure logging severity
+		  monitor             Set terminal monitor parameters
+		  on                  Turn on logging
+		  persistent          Save logging messages to the flash disk
+		  policy              Configure logging policies
+		  qos                 Configure QoS parameters
+		  relogging-interval  Configure relogging-interval for critical log messages
+		  repeat-messages     Repeat messages instead of summarizing number of repeats
+		  source-interface    Use IP Address of interface as source IP of log messages
+		  synchronous         Set synchronizing unsolicited with solicited messages
+		  trap                Severity of messages sent to the syslog server
+	*/
+}
+
 // Hostname is used to hold the hostname for JSON serialization
 type Hostname struct {
 	Hostname string
@@ -28,12 +62,13 @@ type EOSDevices struct {
 
 // EOSDevice is an EOS endpoint
 type EOSDevice struct {
-	Hostname      string              `json:"hostname"`
-	Management    `json:"management"` // TODO: Get rid of redundant management?
-	IPNameServers NameServers         `json:"ipNameServers"`
+	Hostname      string                 `json:"hostname"` // TODO: should this be 'id'?
+	Management    map[string]interface{} `json:"management"`
+	IPNameServers NameServers            `json:"ipNameServers"`
+	Logging       Logging                `json:"logging"`
 }
 
-// Management is an umbrella type for json encoding
+// Management is an umbrella type for json encoding -- UNUSED
 type Management struct {
 	Management map[string]interface{} `json:"management"`
 }
@@ -208,6 +243,38 @@ func parseNTPServer(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
 	return d
 }
 
+// parses logging command
+// ex: logging host 172.22.22.40
+func parseLogging(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
+	line := strings.Fields(scanner.Text())
+	switch line[0] {
+	case "logging":
+		d.Logging.On = true
+		switch line[1] {
+		case "host":
+			{
+				d = parseLoggingHost(d, scanner)
+			}
+		}
+	case "no":
+		{
+			d = parseNoLogging(d, scanner)
+		}
+	}
+	return d
+}
+
+func parseNoLogging(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
+	// line := strings.Fields(scanner.Text())
+	return d
+}
+
+func parseLoggingHost(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
+	line := strings.Fields(scanner.Text())
+	d.Logging.Host.Hostname = line[2]
+	return d
+}
+
 func main() {
 	filePtr := flag.String("input", "eos.config", "config file to convert")
 	flag.Parse()
@@ -223,16 +290,19 @@ func main() {
 	v["ssh"] = ManagementSSH{TypeID: "ssh", Shutdown: false}
 
 	device := EOSDevice{}
-	m := Management{Management: v}
+	// m := Management{Management: v}
+	// var m = map[string]interface{}
+	m := map[string]interface{}{}
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.Fields(scanner.Text())
+		// TODO: How to handle "no" prefix? contains?
 		switch line[0] {
 		case "management":
 			{
 				mgmt := parseManagement(scanner, line)
 				if mgmt != nil {
-					m.Management[mgmt.Type()] = mgmt
+					m[mgmt.Type()] = mgmt
 				}
 				if err != nil {
 					log.Fatal(err)
@@ -245,9 +315,7 @@ func main() {
 		}
 	}
 	device.Management = m
-	b, err := json.MarshalIndent(m, " ", "  ")
 	d, err := json.MarshalIndent(device, " ", "  ")
-	fmt.Printf("%s\n", b)
 	fmt.Printf("%s\n", d)
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)

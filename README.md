@@ -121,4 +121,5 @@ Run 'help' to see a list of commands and check for updates.
 - [ ] ntp configured correctly
 - [ ] test passwords against common hashes
 - [ ] config validation as a service
+- [ ] Create constructor for EOS Device with defaults set (i.e. logging on)
 
