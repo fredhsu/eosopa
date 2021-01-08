@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -208,7 +209,10 @@ func parseNTPServer(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
 }
 
 func main() {
-	file, err := os.Open("./dmz-lf18.config")
+	filePtr := flag.String("input", "eos.config", "config file to convert")
+	flag.Parse()
+
+	file, err := os.Open(*filePtr)
 	if err != nil {
 		log.Fatal(err)
 	}
