@@ -11,6 +11,12 @@ output.json - example output from running opa on input and policy
 config files
 
 ## Example runs:
+```
+go run main.go -input="dmz-lf18.config" 1> test.json      
+opa eval --fail-defined -i test.json -d policy.rego "data.policy.violation[x]"
+echo $?
+
+```
 
 ```
 $ go run main.go 1> test.json
@@ -106,13 +112,18 @@ Run 'help' to see a list of commands and check for updates.
 ## TODO
 - [x] Export to proper JSON format
 - [ ] Add more features to SSH, API, and Telnet
+- [ ] Refactor parseManagement to take a device and return a device, putting in defaults for ssh/telnet/etc.
+- [x] How to handle configlets? Configlet object? - will pass it in as text file
 - [ ] Add security
-- [ ] Expand JSON to have hostname
-- [ ] allow input/output filenames given
+- [x] Expand JSON to have hostname
 - [ ] handle multiple switch configs 
 - [x] parse hostname
 - [ ] test code
 - [ ] reorg file structure
+  - parser stuff into different files under pkg
+  - test cases under ./test
+  - optional move main under cmd
+  - remove parsing code from main
 - [ ] add snmp community parsing for checking community strings
 - [ ] static user accounts vs radius
 - [ ] inbound filter for management access
@@ -122,4 +133,5 @@ Run 'help' to see a list of commands and check for updates.
 - [ ] test passwords against common hashes
 - [ ] config validation as a service
 - [ ] Create constructor for EOS Device with defaults set (i.e. logging on)
+- [ ] allow output filename
 

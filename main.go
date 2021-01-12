@@ -57,12 +57,12 @@ type Hostname struct {
 
 // EOSDevices captures a list of switches
 type EOSDevices struct {
-	Switches []EOSDevice
+	Switches []EOSDevice `json:"switches"`
 }
 
 // EOSDevice is an EOS endpoint
 type EOSDevice struct {
-	Hostname      string                 `json:"hostname"` // TODO: should this be 'id'?
+	Hostname      string                 `json:"id"` // using id to be consistent with OPA
 	Management    map[string]interface{} `json:"management"`
 	IPNameServers NameServers            `json:"ipNameServers"`
 	Logging       Logging                `json:"logging"`
@@ -140,6 +140,7 @@ func parseComments() {
 }
 
 func parseManagement(scanner *bufio.Scanner, line []string) ManagementIntf {
+	// m := Management{}
 	switch mgmt := line[1]; mgmt {
 	case "api":
 		return ManagementAPIHTTP{TypeID: "api"}
@@ -275,6 +276,16 @@ func parseLoggingHost(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
 	return d
 }
 
+// createManagement() Creates an empty mangagement block with default values
+func createManagement() map[string]interface{} {
+	m := map[string]interface{}{
+		"ssh":    ManagementSSH{TypeID: "ssh", Shutdown: false},
+		"telnet": ManagementTelnet{TypeID: "telnet", Shutdown: true},
+		"api":    ManagementAPIHTTP{TypeID: "http", Shutdown: true},
+	}
+	return m
+}
+
 func main() {
 	filePtr := flag.String("input", "eos.config", "config file to convert")
 	flag.Parse()
@@ -285,14 +296,16 @@ func main() {
 	}
 	defer file.Close()
 
-	v := make(map[string]interface{})
+	// v := make(map[string]interface{})
 	// SSH is enabled by default
-	v["ssh"] = ManagementSSH{TypeID: "ssh", Shutdown: false}
+	// v["ssh"] = ManagementSSH{TypeID: "ssh", Shutdown: false}
 
+	devices := EOSDevices{}
 	device := EOSDevice{}
 	// m := Management{Management: v}
 	// var m = map[string]interface{}
-	m := map[string]interface{}{}
+	// m := map[string]interface{}{}
+	m := createManagement()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.Fields(scanner.Text())
@@ -315,7 +328,8 @@ func main() {
 		}
 	}
 	device.Management = m
-	d, err := json.MarshalIndent(device, " ", "  ")
+	devices.Switches = append(devices.Switches, device)
+	d, err := json.MarshalIndent(devices, " ", "  ")
 	fmt.Printf("%s\n", d)
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
