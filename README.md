@@ -112,7 +112,7 @@ Run 'help' to see a list of commands and check for updates.
 ## TODO
 - [x] Export to proper JSON format
 - [ ] Add more features to SSH, API, and Telnet
-- [ ] Refactor parseManagement to take a device and return a device, putting in defaults for ssh/telnet/etc.
+- [ ] Refactor parseManagement to take a device and return a device
 - [x] How to handle configlets? Configlet object? - will pass it in as text file
 - [ ] Add security
 - [x] Expand JSON to have hostname
@@ -134,4 +134,8 @@ Run 'help' to see a list of commands and check for updates.
 - [ ] config validation as a service
 - [ ] Create constructor for EOS Device with defaults set (i.e. logging on)
 - [ ] allow output filename
+- [x] EOS Software / HW model number in opa 
+    - This could enable CVE check
+- [ ] CloudVision to build Rego files to enforce policy dynamically
+
 

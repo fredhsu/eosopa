@@ -7,8 +7,17 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
+
+// SWVersion stores EOS version with integer based Major and Minor
+type SWVersion struct {
+	Major int    `json:"major"`
+	Minor int    `json:"minor"`
+	Patch string `json:"patch"`
+	Meta  string `json:"meta"`
+}
 
 // NameServers is an ip name-server
 type NameServers struct {
@@ -66,6 +75,8 @@ type EOSDevice struct {
 	Management    map[string]interface{} `json:"management"`
 	IPNameServers NameServers            `json:"ipNameServers"`
 	Logging       Logging                `json:"logging"`
+	SWVersion     SWVersion              `json:"swVersion"`
+	HWVersion     string                 `json:"hwVersion"`
 }
 
 // Management is an umbrella type for json encoding -- UNUSED
@@ -276,6 +287,39 @@ func parseLoggingHost(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
 	return d
 }
 
+// parseDeviceInfo assumes it is receiving a commented line with device information
+// ex. ! device: DMZ-LF18 (DCS-7060SX2-48YC6, EOS-4.24.2.1F)
+func parseDeviceInfo(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
+	line := strings.Fields(scanner.Text())
+	d.SWVersion = parseSWVersion(line[4])
+	d.HWVersion = parseHWVersion(line[3])
+	return d
+}
+
+func parseHWVersion(line string) string {
+	cleanLine := strings.TrimPrefix(line, "(")
+	cleanLine = strings.TrimSuffix(cleanLine, ",")
+	return cleanLine
+}
+
+func parseSWVersion(line string) SWVersion {
+	cleanLine := strings.TrimPrefix(line, "EOS-")
+	cleanLine = strings.TrimSuffix(cleanLine, ")")
+	fields := strings.Split(cleanLine, ".")
+	var major, minor int
+	if i, err := strconv.Atoi(fields[0]); err == nil {
+		major = i
+	}
+	if i, err := strconv.Atoi(fields[1]); err == nil {
+		minor = i
+	}
+	swv := SWVersion{Major: major, Minor: minor, Patch: fields[2]}
+	if len(fields) > 3 {
+		swv.Meta = fields[3]
+	}
+	return swv
+}
+
 // createManagement() Creates an empty mangagement block with default values
 func createManagement() map[string]interface{} {
 	m := map[string]interface{}{
@@ -284,6 +328,12 @@ func createManagement() map[string]interface{} {
 		"api":    ManagementAPIHTTP{TypeID: "http", Shutdown: true},
 	}
 	return m
+}
+
+// NewEOSDevice creates an empty device with defaults set
+func NewEOSDevice() EOSDevice {
+	m := createManagement()
+	return EOSDevice{Management: m}
 }
 
 func main() {
@@ -301,7 +351,7 @@ func main() {
 	// v["ssh"] = ManagementSSH{TypeID: "ssh", Shutdown: false}
 
 	devices := EOSDevices{}
-	device := EOSDevice{}
+	device := NewEOSDevice()
 	// m := Management{Management: v}
 	// var m = map[string]interface{}
 	// m := map[string]interface{}{}
@@ -311,6 +361,14 @@ func main() {
 		line := strings.Fields(scanner.Text())
 		// TODO: How to handle "no" prefix? contains?
 		switch line[0] {
+		case "!":
+			{
+				if line[1] == "device:" {
+					device = parseDeviceInfo(device, scanner)
+				} else {
+					continue
+				}
+			}
 		case "management":
 			{
 				mgmt := parseManagement(scanner, line)
