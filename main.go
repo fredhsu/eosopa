@@ -359,9 +359,10 @@ func main() {
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := strings.Fields(scanner.Text())
-		// TODO: How to handle "no" prefix? contains?
+		// TODO: How to handle "no" prefix? contains? -- will this only take place in subconfig?
 		switch line[0] {
 		case "!":
+			// Skipping comments unless the provide device info
 			{
 				if line[1] == "device:" {
 					device = parseDeviceInfo(device, scanner)
