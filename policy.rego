@@ -10,6 +10,11 @@ telnet {
     m.telnet.shutdown
 }
 
+swver {
+    m := input.switches.swVersion
+    m.major
+}
+
 
 # in the following example we will say 'allow' is true if there are no violations
 default allow = false
@@ -28,7 +33,16 @@ allow = true {                                      # allow is true if...
 #     not m.telnet.shutdown # Telnet is in violation (true) if it is not shutdown
 # }
 
+# violation[switch.id] {
+#     switch := input.switches[_]
+#     not switch.management.telnet.shutdown
+# }
 violation[switch.id] {
     switch := input.switches[_]
-    not switch.management.telnet.shutdown
+    switch.swVersion.major < 4
+}
+
+violation[switch.id] {
+    switch := input.switches[_]
+    switch.swVersion.minor < 25
 }

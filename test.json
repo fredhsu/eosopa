@@ -7,6 +7,11 @@
            "TypeID": "api",
            "shutdown": false
          },
+         "ssh": {
+           "TypeID": "ssh",
+           "shutdown": false,
+           "ServerPort": 0
+         },
          "telnet": {
            "idleTimeout": 0,
            "ip": "",
@@ -29,7 +34,14 @@
          "Level": "",
          "SourceInterface": "",
          "Vrf": ""
-       }
+       },
+       "swVersion": {
+         "major": 4,
+         "minor": 24,
+         "patch": "2",
+         "meta": "1F"
+       },
+       "hwVersion": "DCS-7060SX2-48YC6"
      }
    ]
  }

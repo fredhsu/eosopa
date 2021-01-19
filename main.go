@@ -364,7 +364,7 @@ func main() {
 		case "!":
 			// Skipping comments unless the provide device info
 			{
-				if line[1] == "device:" {
+				if len(line) > 1 && line[1] == "device:" {
 					device = parseDeviceInfo(device, scanner)
 				} else {
 					continue
@@ -373,6 +373,7 @@ func main() {
 		case "management":
 			{
 				mgmt := parseManagement(scanner, line)
+				// device := parseManagement(device, scanner)
 				if mgmt != nil {
 					m[mgmt.Type()] = mgmt
 				}
