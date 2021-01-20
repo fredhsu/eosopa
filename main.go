@@ -9,6 +9,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/fredhsu/eosopa/eosparse"
 )
 
 // SWVersion stores EOS version with integer based Major and Minor
@@ -23,40 +25,6 @@ type SWVersion struct {
 type NameServers struct {
 	Vrf       string
 	Addresses []string
-}
-
-// LoggingHost is a syslog server
-type LoggingHost struct {
-	Hostname string `json:"hostname"`
-}
-
-// Logging configuratoin
-type Logging struct {
-	Host            LoggingHost
-	On              bool
-	Level           string
-	SourceInterface string
-	Vrf             string // TODO need additional fields for host and source interface
-
-	/*
-			  buffered            Logging buffer configuration
-		  console             Set console logging parameters
-		  event               Configure logging events
-		  facility            Set logging facility
-		  format              Set logging format parameters
-		  host                Set syslog server IP address and parameters
-		  level               Configure logging severity
-		  monitor             Set terminal monitor parameters
-		  on                  Turn on logging
-		  persistent          Save logging messages to the flash disk
-		  policy              Configure logging policies
-		  qos                 Configure QoS parameters
-		  relogging-interval  Configure relogging-interval for critical log messages
-		  repeat-messages     Repeat messages instead of summarizing number of repeats
-		  source-interface    Use IP Address of interface as source IP of log messages
-		  synchronous         Set synchronizing unsolicited with solicited messages
-		  trap                Severity of messages sent to the syslog server
-	*/
 }
 
 // Hostname is used to hold the hostname for JSON serialization
@@ -74,7 +42,7 @@ type EOSDevice struct {
 	Hostname      string                 `json:"id"` // using id to be consistent with OPA
 	Management    map[string]interface{} `json:"management"`
 	IPNameServers NameServers            `json:"ipNameServers"`
-	Logging       Logging                `json:"logging"`
+	Logging       eosparse.Logging       `json:"logging"`
 	SWVersion     SWVersion              `json:"swVersion"`
 	HWVersion     string                 `json:"hwVersion"`
 }
