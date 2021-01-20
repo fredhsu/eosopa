@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+// Hostname is used to hold the hostname for JSON serialization
+type Hostname struct {
+	Hostname string
+}
+
 // SWVersion stores EOS version with integer based Major and Minor
 type SWVersion struct {
 	Major int    `json:"major"`
@@ -18,7 +23,7 @@ type HWVersion = string
 
 // parseDeviceInfo assumes it is receiving a commented line with device information
 // ex. ! device: DMZ-LF18 (DCS-7060SX2-48YC6, EOS-4.24.2.1F)
-func parseDeviceInfo(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
+func ParseDeviceInfo(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
 	line := strings.Fields(scanner.Text())
 	d.SWVersion = parseSWVersion(line[4])
 	d.HWVersion = parseHWVersion(line[3])
@@ -47,4 +52,9 @@ func parseHWVersion(line string) string {
 	cleanLine := strings.TrimPrefix(line, "(")
 	cleanLine = strings.TrimSuffix(cleanLine, ",")
 	return cleanLine
+}
+
+func ParseHostname(d EOSDevice, line []string) EOSDevice {
+	d.Hostname = line[1]
+	return d
 }

@@ -7,44 +7,14 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 
-	"github.com/fredhsu/eosopa/eosparse"
+	eosparse "github.com/fredhsu/eosopa/pkg"
 )
-
-// SWVersion stores EOS version with integer based Major and Minor
-type SWVersion struct {
-	Major int    `json:"major"`
-	Minor int    `json:"minor"`
-	Patch string `json:"patch"`
-	Meta  string `json:"meta"`
-}
-
-// NameServers is an ip name-server
-type NameServers struct {
-	Vrf       string
-	Addresses []string
-}
-
-// Hostname is used to hold the hostname for JSON serialization
-type Hostname struct {
-	Hostname string
-}
 
 // EOSDevices captures a list of switches
 type EOSDevices struct {
-	Switches []EOSDevice `json:"switches"`
-}
-
-// EOSDevice is an EOS endpoint
-type EOSDevice struct {
-	Hostname      string                 `json:"id"` // using id to be consistent with OPA
-	Management    map[string]interface{} `json:"management"`
-	IPNameServers NameServers            `json:"ipNameServers"`
-	Logging       eosparse.Logging       `json:"logging"`
-	SWVersion     SWVersion              `json:"swVersion"`
-	HWVersion     string                 `json:"hwVersion"`
+	Switches []eosparse.EOSDevice `json:"switches"`
 }
 
 // Management is an umbrella type for json encoding -- UNUSED
@@ -113,11 +83,6 @@ func (m ManagementSSH) Type() string {
 	return m.TypeID
 }
 
-// TODO : scan through multiple commented lines to get to non-commented line
-func parseComments() {
-
-}
-
 func parseManagement(scanner *bufio.Scanner, line []string) ManagementIntf {
 	// m := Management{}
 	switch mgmt := line[1]; mgmt {
@@ -179,11 +144,6 @@ func contains(xs []string, s string) bool {
 	return false
 }
 
-func parseHostname(d EOSDevice, line []string) EOSDevice {
-	d.Hostname = line[1]
-	return d
-}
-
 /*
 ip name-server vrf default 172.22.22.40
 dns domain sjc.aristanetworks.com
@@ -193,101 +153,6 @@ ntp server 198.55.111.50
 ntp server 216.229.0.17
 */
 
-// parses ip name-server command (max: 3)
-// ex: ip name-server vrf default 172.22.22.40
-func parseNameServers(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
-	ns := NameServers{}
-	line := strings.Fields(scanner.Text())
-	addrs := []string{}
-	ns.Vrf = line[3]
-	for _, addr := range line[4:] {
-		addrs = append(addrs, addr)
-	}
-	ns.Addresses = addrs
-	d.IPNameServers = ns
-	return d
-}
-
-// parses dns domain command
-// ex: dns domain sjc.aristanetworks.com
-func parseDNSDomain(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
-	return d
-}
-
-// parses ntp server command
-// ex.
-// ntp server 172.22.22.50
-// ntp server 198.55.111.50
-// ntp server 216.229.0.17
-func parseNTPServer(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
-	return d
-}
-
-// parses logging command
-// ex: logging host 172.22.22.40
-func parseLogging(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
-	line := strings.Fields(scanner.Text())
-	switch line[0] {
-	case "logging":
-		d.Logging.On = true
-		switch line[1] {
-		case "host":
-			{
-				d = parseLoggingHost(d, scanner)
-			}
-		}
-	case "no":
-		{
-			d = parseNoLogging(d, scanner)
-		}
-	}
-	return d
-}
-
-func parseNoLogging(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
-	// line := strings.Fields(scanner.Text())
-	return d
-}
-
-func parseLoggingHost(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
-	line := strings.Fields(scanner.Text())
-	d.Logging.Host.Hostname = line[2]
-	return d
-}
-
-// parseDeviceInfo assumes it is receiving a commented line with device information
-// ex. ! device: DMZ-LF18 (DCS-7060SX2-48YC6, EOS-4.24.2.1F)
-func parseDeviceInfo(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
-	line := strings.Fields(scanner.Text())
-	d.SWVersion = parseSWVersion(line[4])
-	d.HWVersion = parseHWVersion(line[3])
-	return d
-}
-
-func parseHWVersion(line string) string {
-	cleanLine := strings.TrimPrefix(line, "(")
-	cleanLine = strings.TrimSuffix(cleanLine, ",")
-	return cleanLine
-}
-
-func parseSWVersion(line string) SWVersion {
-	cleanLine := strings.TrimPrefix(line, "EOS-")
-	cleanLine = strings.TrimSuffix(cleanLine, ")")
-	fields := strings.Split(cleanLine, ".")
-	var major, minor int
-	if i, err := strconv.Atoi(fields[0]); err == nil {
-		major = i
-	}
-	if i, err := strconv.Atoi(fields[1]); err == nil {
-		minor = i
-	}
-	swv := SWVersion{Major: major, Minor: minor, Patch: fields[2]}
-	if len(fields) > 3 {
-		swv.Meta = fields[3]
-	}
-	return swv
-}
-
 // createManagement() Creates an empty mangagement block with default values
 func createManagement() map[string]interface{} {
 	m := map[string]interface{}{
@@ -296,12 +161,6 @@ func createManagement() map[string]interface{} {
 		"api":    ManagementAPIHTTP{TypeID: "http", Shutdown: true},
 	}
 	return m
-}
-
-// NewEOSDevice creates an empty device with defaults set
-func NewEOSDevice() EOSDevice {
-	m := createManagement()
-	return EOSDevice{Management: m}
 }
 
 func main() {
@@ -319,7 +178,7 @@ func main() {
 	// v["ssh"] = ManagementSSH{TypeID: "ssh", Shutdown: false}
 
 	devices := EOSDevices{}
-	device := NewEOSDevice()
+	device := eosparse.NewEOSDevice()
 	// m := Management{Management: v}
 	// var m = map[string]interface{}
 	// m := map[string]interface{}{}
@@ -333,7 +192,7 @@ func main() {
 			// Skipping comments unless the provide device info
 			{
 				if len(line) > 1 && line[1] == "device:" {
-					device = parseDeviceInfo(device, scanner)
+					device = eosparse.ParseDeviceInfo(device, scanner)
 				} else {
 					continue
 				}
@@ -351,7 +210,7 @@ func main() {
 			}
 		case "hostname":
 			{
-				device = parseHostname(device, line)
+				device = eosparse.ParseHostname(device, line)
 			}
 		}
 	}

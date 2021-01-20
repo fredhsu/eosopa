@@ -10,12 +10,12 @@ type EOSDevice struct {
 	HWVersion     HWVersion              `json:"hwVersion"`
 }
 
-func NewEOSDevice() *EOSDevice {
+func NewEOSDevice() EOSDevice {
 	m := NewManagement()
 	ns := NameServers{}
 	logging := Logging{}
 	swver := SWVersion{}
 	hwver := ""
 	ed := EOSDevice{"", m, ns, logging, swver, hwver}
-	return &ed
+	return ed
 }

@@ -13,7 +13,7 @@ type NameServers struct {
 
 // parses ip name-server command (max: 3)
 // ex: ip name-server vrf default 172.22.22.40
-func parseNameServers(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
+func ParseNameServers(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
 	ns := NameServers{}
 	line := strings.Fields(scanner.Text())
 	addrs := []string{}
@@ -28,6 +28,6 @@ func parseNameServers(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
 
 // parses dns domain command
 // ex: dns domain sjc.aristanetworks.com
-func parseDNSDomain(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
+func ParseDNSDomain(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
 	return d
 }
