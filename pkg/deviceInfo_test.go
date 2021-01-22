@@ -12,7 +12,7 @@ func TestParseDeviceInfo(t *testing.T) {
 	scanner := bufio.NewScanner(r)
 	scanner.Scan()
 	d := EOSDevice{}
-	d = parseDeviceInfo(d, scanner)
+	d = ParseDeviceInfo(d, scanner)
 	swver := SWVersion{
 		Major: 4,
 		Minor: 24,
@@ -32,7 +32,7 @@ func TestParseDeviceInfo(t *testing.T) {
 func TestParseHostname(t *testing.T) {
 	d := EOSDevice{}
 	line := []string{"hostname", "foo"}
-	d = parseHostname(d, line)
+	d = ParseHostname(d, line)
 	if d.Hostname != "foo" {
 		t.Fatalf("Expected hostname to be %s, but got %s", line[1], d.Hostname)
 	}

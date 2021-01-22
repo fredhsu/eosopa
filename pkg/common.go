@@ -20,3 +20,12 @@ func ParseShutdown(line []string) bool {
 	}
 	return true
 }
+
+func StringSliceEq(s1, s2 []string) bool {
+	for i, s := range s1 {
+		if s != s2[i] {
+			return false
+		}
+	}
+	return true
+}

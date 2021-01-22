@@ -8,7 +8,7 @@ import (
 )
 
 func TestParseNameServers(t *testing.T) {
-	file, err := os.Open("./nameserver.config")
+	file, err := os.Open("../nameserver.config")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -19,11 +19,11 @@ func TestParseNameServers(t *testing.T) {
 	vrf := "default"
 	addresses := []string{"1.1.1.1", "2.2.2.2", "3.3.3.3"}
 	scanner.Scan()
-	d = parseNameServers(d, scanner)
+	d = ParseNameServers(d, scanner)
 	if d.IPNameServers.Vrf != vrf {
 		t.Fatalf("Expected vrf to be %s, but got %s", d.IPNameServers.Vrf, vrf)
 	}
-	if !stringSliceEq(d.IPNameServers.Addresses, addresses) {
+	if !StringSliceEq(d.IPNameServers.Addresses, addresses) {
 		t.Fatalf("Expected addresses to be %+v, but got %+v", d.IPNameServers.Addresses, addresses)
 	}
 }
