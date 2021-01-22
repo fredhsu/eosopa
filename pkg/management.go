@@ -103,7 +103,7 @@ func GetMangagemntType(line string) string {
 
 // ParseManagement takes an EOSDevice (assumed management has been created) and scanner
 // then returns an EOSDevice with the parsed management information added
-func ParseManagement(d EOSDevice, scanner *bufio.Scanner) *EOSDevice {
+func ParseManagement(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
 	line := strings.Fields(scanner.Text())
 	switch mgmt := line[1]; mgmt {
 	case "api":
@@ -114,9 +114,9 @@ func ParseManagement(d EOSDevice, scanner *bufio.Scanner) *EOSDevice {
 		d.Management[mgmt] = parseSSH(scanner)
 	default:
 		log.Printf("%s is not a recognized management type", mgmt)
-		log.Fatal("Cannot continue parsing")
+		// log.Fatal("Cannot continue parsing")
 	}
-	return &d
+	return d
 }
 
 func parseSSH(scanner *bufio.Scanner) ManagementSSH {
