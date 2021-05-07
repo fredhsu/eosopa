@@ -5,11 +5,6 @@ import (
 	"strings"
 )
 
-// LoggingHost is a syslog server
-type LoggingHost struct {
-	Hostname string `json:"hostname"`
-}
-
 // Logging configuratoin
 type Logging struct {
 	Host            LoggingHost
@@ -39,9 +34,14 @@ type Logging struct {
 	*/
 }
 
-// parses logging command
+// LoggingHost is a syslog server
+type LoggingHost struct {
+	Hostname string `json:"hostname"`
+}
+
+// ParseLogging parses logging command
 // ex: logging host 172.22.22.40
-func parseLogging(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
+func ParseLogging(d EOSDevice, scanner *bufio.Scanner) EOSDevice {
 	line := strings.Fields(scanner.Text())
 	switch line[0] {
 	case "logging":

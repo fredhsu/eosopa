@@ -34,12 +34,13 @@ func main() {
 		line := strings.Fields(scanner.Text())
 		// TODO: How to handle "no" prefix? contains? -- will this only take place in subconfig?
 		switch line[0] {
-		case "!":
-			// Skipping comments unless the provide device info
+		case "!": // comments
 			{
 				if len(line) > 1 && line[1] == "device:" {
+					// The first few lines of config have device information embedded
 					device = eosparse.ParseDeviceInfo(device, scanner)
 				} else {
+					// Not device info related comment string so skip
 					continue
 				}
 			}
@@ -51,6 +52,19 @@ func main() {
 			{
 				device = eosparse.ParseHostname(device, line)
 			}
+		case "logging":
+			{
+				device = eosparse.ParseLogging(device, scanner)
+			}
+		case "no":
+			{
+				//device = eosparse.NoCommand(device, line)
+                continue
+			}
+        default:
+            {
+                continue
+            }
 		}
 	}
 	devices.Switches = append(devices.Switches, device)

@@ -137,5 +137,5 @@ Run 'help' to see a list of commands and check for updates.
 - [x] EOS Software / HW model number in opa 
     - This could enable CVE check
 - [ ] CloudVision to build Rego files to enforce policy dynamically
-
+- [ ] Handle 'no' commands
 

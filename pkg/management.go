@@ -21,6 +21,29 @@ const (
 	RESTCONF
 )
 
+func (mt ManagementType) String() string {
+	switch mt {
+	case TELNET:
+		return "telnet"
+	case SSH:
+		return "ssh"
+	case HTTPAPI:
+		return "httpapi"
+	case GNMI:
+		return "gnmi"
+	case GRIBI:
+		return "gribi"
+	case NETCONF:
+		return "netconf"
+	case OPENCONFIG:
+		return "openconfig"
+	case RESTCONF:
+		return "restconf"
+	default:
+		return "unknown"
+	}
+}
+
 // Management is an umbrella type for json encoding -- UNUSED
 type Management struct {
 	Management map[string]interface{} `json:"management"`
@@ -89,16 +112,13 @@ func (m ManagementSSH) Type() string {
 
 // NewManagement Creates an empty mangagement block with default values
 func NewManagement() map[string]interface{} {
+	// The following are defaults
 	m := map[string]interface{}{
 		"ssh":    ManagementSSH{TypeID: "ssh", Shutdown: false},
 		"telnet": ManagementTelnet{TypeID: "telnet", Shutdown: true},
 		"api":    ManagementAPIHTTP{TypeID: "http", Shutdown: true},
 	}
 	return m
-}
-
-func GetMangagemntType(line string) string {
-	return ""
 }
 
 // ParseManagement takes an EOSDevice (assumed management has been created) and scanner
